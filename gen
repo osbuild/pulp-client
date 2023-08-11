@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -eux
+
+GO_VERSION=1.19.11
+GO_BINARY=$(go env GOPATH)/bin/go$GO_VERSION
+
+# Notes:
+# - Based on https://github.com/content-services/zest/blob/6332c1c58fe32437abb80e0605df624411c2de79/.github/workflows/pulp.yml#L66-L75
+# - Disabling strict-spec is required for double slashes when appending an href
+# to the local base path
+# - Disabling skipFormModel is required for avoiding duplicate declarations
+# with the ansible plugin
+podman run --rm -v "${PWD}":/repo openapitools/openapi-generator-cli generate \
+    -i /repo/spec/pulp-api.json \
+    -g go \
+    -o /repo/pulpclient --minimal-update --skip-validate-spec \
+    --package-name=pulpclient \
+    --git-user-id=osbuild --git-repo-id=pulp-client \
+    -p enumClassPrefix=true -p structPrefix=true \
+    -p isGoSubmodule=true \
+    -p disallowAdditionalPropertiesIfNotPresent=false \
+    --strict-spec=false \
+    --global-property skipFormModel=false  # for ansible plugin issue
+
+# this is the official way to get a different version of golang
+# see https://go.dev/doc/manage-install
+go install golang.org/dl/go$GO_VERSION@latest
+$GO_BINARY download
+
+# ensure that go.mod and go.sum are up to date
+$GO_BINARY mod tidy
+$GO_BINARY mod vendor
