@@ -1,0 +1,4 @@
+# only generate go and markdown files
+**
+!**/*.go
+!**/*.md

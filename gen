@@ -21,6 +21,7 @@ podman run --rm -v "${PWD}":/repo openapitools/openapi-generator-cli generate \
     -p isGoSubmodule=true \
     -p disallowAdditionalPropertiesIfNotPresent=false \
     --strict-spec=false \
+    --ignore-file-override=/repo/.openapi-generator-ignore \
     -t /repo/templates \
     --global-property skipFormModel=false  # for ansible plugin issue
 
